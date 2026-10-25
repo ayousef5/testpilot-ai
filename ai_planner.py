@@ -4,15 +4,20 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# Load the API key from our local .env file.
 load_dotenv()
-
-# Create a client that can send requests to OpenAI.
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def create_test_plan(instruction):
-    # Ask the AI to turn the user's instruction into a test plan.
+    # Read the key from .env locally, or Streamlit Secrets online.
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        import streamlit as st
+        api_key = st.secrets["OPENAI_API_KEY"]
+
+    # Connect to OpenAI using the available API key.
+    client = OpenAI(api_key=api_key)
+
     response = client.responses.create(
         model="gpt-5-mini",
         instructions=(
@@ -24,11 +29,9 @@ def create_test_plan(instruction):
         input=instruction,
     )
 
-    # Return the AI's text response to the caller.
     return response.output_text
 
 
-# Run a quick test when this file is executed directly.
 if __name__ == "__main__":
     plan = create_test_plan(
         "Test login with an incorrect password on SauceDemo."
